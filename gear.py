@@ -64,7 +64,7 @@ def dict_to_gears(dic:dict):
     )
 
 class Gear():
-    def __init__(self, type, level, main_stat_name, main_stat_amount, main_stat_is_percent, substats, set_name, meta):
+    def __init__(self, type, level, main_stat_name, main_stat_amount, main_stat_is_percent, substats, set_name, fabled_name, fabled_level, meta):
         self.type = type
         self.level = level
         self.main_stat_name = main_stat_name
@@ -72,6 +72,8 @@ class Gear():
         self.main_stat_is_percent = main_stat_is_percent
         self.substats = substats
         self.set_name = set_name
+        self.fabled_name = fabled_name
+        self.fabled_level = fabled_level
         self.meta = meta
         
         self._translator = Translator()
@@ -85,6 +87,7 @@ class Gear():
             self.rarity = {2:"elite",3:"epic",4:"legendary"}[self.initial_procs]  
         else:
             self.rarity = "unknown"
+        self.fabled_name = self.get_fabled_name(self.fabled_name)
         
         #print([substat._asdict() for substat in self.substats])
         
@@ -119,6 +122,9 @@ class Gear():
                     return substat.stat_amount
             raise Exception(f'Error {stat_name} not in {str(self)}')
     
+    def get_fabled_name(self, fabled_name):
+        return self._translator.translate_fabled(fabled_name)
+
     def _asdict(self):
         return {
             "type": self.type,
@@ -135,6 +141,8 @@ class Gear():
                 "total_procs": self.total_procs,
                 "initial_procs": self.initial_procs           
             },
+            "fabled_name": self.fabled_name,
+            "fabled_level": self.fabled_level,
             "meta": self.meta
         }
         

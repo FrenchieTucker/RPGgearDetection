@@ -19,6 +19,10 @@ class Translator():
         with open(f"{folder_translations_data}/rarity_names.json", "r", encoding="utf-8") as f:
             self.translations_rarity_names = json.load(f)
             f.close()
+        # import fabled translations
+        with open(f"{folder_translations_data}/fabled_names.json", "r", encoding="utf-8") as f:
+            self.translations_fabled_names = json.load(f)
+            f.close()
     
     def translate_type(self, value):
         return self.translations_type_names[value]
@@ -31,3 +35,6 @@ class Translator():
     
     def translate_rarity(self, value):
         return self.translations_rarity_names[value]
+
+    def translate_fabled(self, value):
+        return self.translations_fabled_names[value]

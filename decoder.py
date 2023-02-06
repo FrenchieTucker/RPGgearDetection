@@ -154,13 +154,16 @@ class Decoder():
         if self.language == "fr":
             self.TYPES = ["Arme", "Tête", "Buste", "Pieds", "Mains", "Cou"]
             self.STATS = ["Attaque", "Défense", "PV", "Taux de Crit.", "Dégâts de Crit.", "Vitesse", "Résistance", "Concentration", "Agilité", "Précision"]
-            self.SETS =  ["Guerrier", "Fureur", "d'Avant-Garde", "Renaissance", "Malédiction", "d'Assassin", "Divin",
+            self.SETS  = ["Guerrier", "Fureur", "d'Avant-Garde", "Renaissance", "Malédiction", "d'Assassin", "Divin",
                           "Terre", "Raid", "d'Aigle", "Foi", "Draconique", "l'Avarice", "Garde", "d'Invincibilité"]
+            self.FABLED = ["Féroce", "Tenace", "Endurant", "Perspicace", "Résolu", "Mortel", "Brutal", "Vif", "Robuste", "Dur", "Solide"]
         else: # "en"
             self.TYPES = ["Weapon", "Head", "Chest", "Feet", "Hands", "Neck"]
             self.STATS = ["Attack", "Health", "Defense", "Speed", "Crit. Rate", "Crit. Damage", "Focus", "Resistance", "Agility", "Precision"]
             self.SETS =  ["Warrior", "Rage", "Vanguard", "Revival", "Cursed", "Assassin", "Divine", "Terra",
                           "Raider", "Raptor", "Faith", "Dragonscale", "Avarice", "Guard", "Rebel"]
+            self.FABLED = ["Ferocious", "Tenacious", "Enduring", "Acumen", "Resolute", "Deadly", "Brutal", "Swift", "Stalwart", "Tough", "Sturdy"]
+        self.FABLED_LEVEL = ["I", "II", "III", "IV", "V", "VI"]
 
     def get_substats_amount(self, texts_substats):
         return [text.description for text in texts_substats][1:]
@@ -242,7 +245,26 @@ class Decoder():
                         }
                         return True
         raise InvalidGearException('Error - [mainStatValue] not found')
-    
+
+    def decode_fabled(self, texts_left):
+        for i,text in enumerate(texts_left):
+            if i > self.mainStat['index'] and i < self.subStart['index']:
+                center, limit_coords = get_coords(text.bounding_poly)
+                if center[1] > self.mainStatValue['coords_center'][1] and center[1] < self.subStart['coords_center'][1]:
+                    is_fabled_type_similar_word,       fabled_type_similar_word       = match_word(text.description,            self.FABLED)
+                    is_fabled_type_level_similar_word, fabled_type_level_similar_word = match_word(texts_left[i+1].description, self.FABLED_LEVEL)
+                    if is_fabled_type_similar_word and is_fabled_type_level_similar_word:
+                        self.fabled = {
+                            "raw":           text.description,
+                            "coords_center": center,
+                            "coords_limit":  limit_coords,
+                            "index":         i,
+                            "name":          fabled_type_similar_word,
+                            "level":         fabled_type_level_similar_word
+                        }
+                        return True
+        self.fabled = {"index": -1, "name": "", "level": ""}
+
     def decode_setPos(self, texts_left):
         for i,text in enumerate(texts_left):
             if i > self.subStart['index']:
@@ -344,6 +366,7 @@ class Decoder():
         self.decode_mainStat(texts_left)
         self.decode_subStart(texts_left)
         self.decode_mainStatValue(texts_left)
+        self.decode_fabled(texts_left)
         self.decode_setPos(texts_left)
         self.decode_setValue(texts_left)
         self.decode_substatsName(texts_left)
@@ -384,6 +407,8 @@ class Decoder():
             main_stat_is_percent = main_stat_is_percent,
             substats = substats,
             set_name = set_name,
+            fabled_name = self.fabled['name'],
+            fabled_level = self.fabled['level'],
             meta = {"completed_substats":self.completed_substats, "index_img":index})
         
         return gear._asdict()
