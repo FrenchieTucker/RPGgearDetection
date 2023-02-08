@@ -340,10 +340,12 @@ class Decoder():
     
     def decode_substatsAmount(self, texts_substats):
         substats_amount = self.get_substats_amount(texts_substats)
-        if len(substats_amount) != len(self.substats):
+        if len(substats_amount) < len(self.substats):
             self.completed_substats = False
             print('Error - in [substatsAmount] missmatch with length substats')
         else:
+            if len(substats_amount) > len(self.substats):
+                print('Warning - substats_amount is bigger than substats, but it is not an issue')
             for substat_id, substat_dic in self.substats.items():
                 self.completed_substats = True
                 self.substats[substat_id]['amount'] = {
