@@ -1,7 +1,13 @@
 from clickListener import ClickListener
 from PIL import Image
+from PIL import ImageChops
 import os
 
+def are_images_identical(img_path1, img_path2):
+    img1 = Image.open(img_path1)
+    img2 = Image.open(img_path2)
+    diff = ImageChops.difference(img1, img2)
+    return diff.getbbox() == None
 
 class Screener():
     def  __init__(self, folder_img_left, folder_img_substats) -> None:
@@ -12,9 +18,8 @@ class Screener():
         
     def delete_screenshot_if_redonant(self):
         if self.index >= 1:
-            is_identical_left = (Image.open(f'{self.folder_img_left}/{self.index}.png').__array__()==Image.open(f'{self.folder_img_left}/{self.index-1}.png').__array__()).all()
-            is_identical_substats = (Image.open(f'{self.folder_img_substats}/{self.index}.png').__array__()==Image.open(f'{self.folder_img_substats}/{self.index-1}.png').__array__()).all()
-            if is_identical_left or is_identical_substats:
+            if are_images_identical(f'{self.folder_img_left}/{self.index}.png', f'{self.folder_img_left}/{self.index-1}.png') or \
+               are_images_identical(f'{self.folder_img_substats}/{self.index}.png', f'{self.folder_img_substats}/{self.index-1}.png'):
                 os.remove(f'{self.folder_img_left}/{self.index}.png')
                 os.remove(f'{self.folder_img_substats}/{self.index}.png')
                 print("redondant screenshot. DELETED")
